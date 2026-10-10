@@ -118,10 +118,14 @@ PAGE = r'''<!doctype html><html lang="es"><meta charset="utf-8"><meta name="view
 :root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#101624;color:#eef3fc;font:16px/1.5 system-ui}main{max-width:1200px;margin:auto;padding:26px}a{color:#65dfbb}h1{margin-bottom:4px}p{color:#aab9d0}.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0}button,input,select{font:inherit;padding:10px 14px;border-radius:10px;border:1px solid #34435e;background:#192235;color:#eef3fc}button{cursor:pointer}button:hover{border-color:#65dfbb}.primary{background:#65dfbb;color:#102a24;font-weight:bold}.layout{display:grid;grid-template-columns:3fr 2fr;gap:16px}textarea,pre{width:100%;height:470px;background:#151e2e;color:#eef3fc;border:1px solid #34435e;border-radius:14px;padding:18px;font:15px/1.6 monospace;tab-size:4}textarea{resize:vertical;white-space:pre;overflow:auto}pre{margin:0;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}label{display:block;margin:8px 0;color:#aab9d0}#status{min-height:28px;color:#65dfbb}button:disabled{opacity:.5;cursor:wait}input{max-width:240px}footer{color:#aab9d0;font-size:13px;margin:20px 0}*:focus-visible{outline:2px solid #65dfbb;outline-offset:3px}@media(max-width:800px){.layout{grid-template-columns:1fr}textarea{height:360px}pre{height:230px}}
 
 .code-editor{position:relative;height:470px;border:1px solid #34435e;border-radius:14px;background:#1e1e1e;overflow:hidden}.code-editor textarea,.code-editor #highlight{font:15px/24px Consolas,"Liberation Mono",monospace;letter-spacing:0;font-variant-ligatures:none;tab-size:4;padding:18px;white-space:pre;overflow-wrap:normal;margin:0;border:0;border-radius:0;background:transparent}.code-editor textarea{position:absolute;left:56px;top:0;width:calc(100% - 56px);height:100%;resize:none;color:transparent;caret-color:#ffffff;z-index:2;overflow:auto;-webkit-text-fill-color:transparent}.code-editor textarea::selection{background:#264f78;color:transparent}.code-editor textarea:focus-visible{outline:0}.code-editor:focus-within{border-color:#65dfbb;box-shadow:0 0 0 1px #65dfbb}.paint{position:absolute;left:56px;right:0;top:0;bottom:0;overflow:hidden;pointer-events:none}.code-editor #highlight{width:max-content;min-width:100%;height:auto;overflow:visible;color:#d4d4d4;transform-origin:top left}.gutter{position:absolute;left:0;top:0;bottom:0;width:56px;background:#202020;border-right:1px solid #343434;overflow:hidden;pointer-events:none}#line-numbers{padding:18px 10px 18px 0;text-align:right;color:#858585;font:15px/24px Consolas,"Liberation Mono",monospace}#line-numbers span{display:block;height:24px}.tok-keyword{color:#c586c0}.tok-variable{color:#9cdcfe}.tok-function{color:#dcdcaa}.tok-string{color:#ce9178}.tok-number{color:#b5cea8}.tok-comment{color:#6a9955;font-style:italic}.tok-operator{color:#d4d4d4}.tok-punctuation{color:#ffd700}.tok-constant{color:#569cd6}.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;padding:10px 2px}.toolbar #files{min-width:140px}.toolbar #name{min-width:140px}#package-list{height:180px!important}@media(max-width:800px){.code-editor{height:360px}}
-</style><main><a href="/">← Volver al explorador</a><h1>Laboratorio Python</h1><p>Crea tus scripts, guárdalos y ejecútalos en tu Raspberry Pi.</p><section aria-label="Librerías Python"><h2>Librerías</h2><p>Instala por nombre, por ejemplo: requests pyserial. Necesitas Internet.</p><div class="toolbar"><input id="package" placeholder="requests pyserial" aria-label="Librerías a instalar"><button class="primary" id="install">＋ Instalar librerías</button><button id="packages">Ver instaladas</button></div><pre id="package-list" hidden style="height:180px" aria-label="Librerías instaladas"></pre></section><section aria-label="Actualización del editor"><h2>Actualizaciones</h2><p>Repositorio público propio · rama main · Guarda tu código antes de actualizar.</p><div class="toolbar"><input id="repository" placeholder="https://github.com/usuario/electronica-pi" aria-label="Repositorio GitHub" style="max-width:none;min-width:260px;flex:1"><button id="update">↻ Actualizar desde GitHub</button></div></section><div id="install-progress" hidden><label id="progress-label" for="progress">Librerías completadas: 0%</label><progress id="progress" max="100" value="0" style="width:100%;height:20px;accent-color:#65dfbb"></progress></div><div id="status" role="status" aria-live="polite">Listo para programar.</div><div class="toolbar"><button id="new">＋ Nuevo</button><select id="files" aria-label="Scripts guardados"></select><button id="open">Abrir</button><input id="name" value="hola.py" aria-label="Nombre del archivo"><button id="save">Guardar</button><button class="primary" id="run">▶ Guardar y ejecutar</button><button id="stop">■ Detener</button></div><div class="layout"><section><label for="code">Código Python · UTF-8</label><div class="code-editor"><div class="gutter" aria-hidden="true"><div id="line-numbers"></div></div><div class="paint" aria-hidden="true"><pre id="highlight"></pre></div><textarea id="code" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off">print("Hola desde mi Raspberry Pi")
-</textarea></div></section><section><label for="output">Consola de resultados</label><pre id="output" tabindex="0">La salida y los errores aparecerán aquí.</pre></section></div><footer>Carpeta: ~/Compartido/Proyectos/Python · Un script a la vez · Scripts: hasta 60 segundos · Instalaciones: hasta 10 minutos · Entorno virtual propio.<br>Esta consola muestra resultados; no admite entrada interactiva con input(). Los scripts se ejecutan con los permisos de electronica.</footer></main><script>
-const token=__TOKEN__, $=id=>document.getElementById(id);let dirty=false,polling=false,reloading=false;
-async function api(action,data){const r=await fetch('/api/editor/'+action,{method:data?'POST':'GET',headers:{'Content-Type':'application/json','X-Editor-Token':token},body:data?JSON.stringify(data):undefined});let j;try{j=await r.json()}catch(e){throw Error('No se pudo conectar al editor. Recarga la página.')}if(!r.ok)throw Error(j.error||'Error');return j}
+</style><main><a href="/">← Volver al explorador</a><h1>Laboratorio Python</h1><p>Crea tus scripts, guárdalos y ejecútalos en tu Raspberry Pi.</p><section aria-label="Librerías Python"><h2>Librerías</h2><p>Instala por nombre, por ejemplo: requests pyserial. Necesitas Internet.</p><div class="toolbar"><input id="package" placeholder="requests pyserial" aria-label="Librerías a instalar"><button class="primary" id="install">＋ Instalar librerías</button><button id="packages">Ver instaladas</button></div><pre id="package-list" hidden style="height:180px" aria-label="Librerías instaladas"></pre></section><section aria-label="Actualización del editor"><h2>Actualizaciones</h2><p>Repositorio público propio · rama main · Guarda tu código antes de actualizar.</p><div class="toolbar"><input id="repository" placeholder="https://github.com/usuario/electronica-pi" aria-label="Repositorio GitHub" style="max-width:none;min-width:260px;flex:1"><button id="update">↻ Actualizar desde GitHub</button></div></section><div id="install-progress" hidden><label id="progress-label" for="progress">Librerías completadas: 0%</label><progress id="progress" max="100" value="0" style="width:100%;height:20px;accent-color:#65dfbb"></progress></div><div id="status" role="status" aria-live="polite">Listo para programar.</div><section aria-label="Carpeta de trabajo"><h2>Carpeta de trabajo</h2><p id="folder-path" style="overflow-wrap:anywhere"></p><div class="toolbar"><button id="folder-up">↑ Subir carpeta</button><select id="folder-select" aria-label="Subcarpetas"></select><button id="folder-enter">Entrar en carpeta</button><button id="folder-home">⌂ Mi carpeta personal</button></div><p id="file-path" style="overflow-wrap:anywhere"></p></section><div class="toolbar"><button id="new">＋ Nuevo</button><select id="files" aria-label="Scripts guardados"></select><button id="open">Abrir</button><input id="name" value="hola.py" aria-label="Nombre del archivo"><button id="save">Guardar</button><button class="primary" id="run">▶ Guardar y ejecutar</button><button id="stop">■ Detener</button></div><div class="layout"><section><label for="code">Código Python · UTF-8</label><div class="code-editor"><div class="gutter" aria-hidden="true"><div id="line-numbers"></div></div><div class="paint" aria-hidden="true"><pre id="highlight"></pre></div><textarea id="code" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off">print("Hola desde mi Raspberry Pi")
+</textarea></div></section><section><label for="output">Consola de resultados</label><pre id="output" tabindex="0">La salida y los errores aparecerán aquí.</pre></section></div><footer>Carpeta: la seleccionada arriba · Un script a la vez · Scripts: hasta 60 segundos · Instalaciones: hasta 10 minutos · Entorno virtual propio.<br>Esta consola muestra resultados; no admite entrada interactiva con input(). Los scripts se ejecutan con los permisos de electronica.</footer></main><script>
+const token=__TOKEN__, $=id=>document.getElementById(id);let dirty=false,polling=false,reloading=false,currentDirectory="",parentDirectory=null;
+async function api(action,data){let path='/api/editor/'+action;if(!data&&currentDirectory)path+=(path.includes('?')?'&':'?')+'directory='+encodeURIComponent(currentDirectory);const r=await fetch(path,{method:data?'POST':'GET',headers:{'Content-Type':'application/json','X-Editor-Token':token},body:data?JSON.stringify({...data,directory:currentDirectory}):undefined});let j;try{j=await r.json()}catch(e){throw Error('No se pudo conectar al editor. Recarga la página.')}if(!r.ok)throw Error(j.error||'Error');return j}
+function showFilePath(){$('file-path').textContent='Archivo: '+currentDirectory+'/'+$('name').value}
+async function loadFolder(directory){const previous=currentDirectory;currentDirectory=directory||'';try{const info=await api('folders');currentDirectory=info.directory;parentDirectory=info.parent;$('folder-path').textContent='Guardar y ejecutar en: '+currentDirectory;$('folder-up').disabled=!parentDirectory;$('folder-select').replaceChildren();for(const name of info.folders){const opt=document.createElement('option');opt.textContent=opt.value=name;$('folder-select').append(opt)}$('folder-enter').disabled=info.folders.length===0;await list();showFilePath();if(previous&&previous!==currentDirectory){dirty=true;status('Carpeta cambiada. El código actual se guardará aquí; los archivos anteriores permanecen en su ubicación.')}}catch(e){currentDirectory=previous;throw e}}
+$('folder-up').addEventListener('click',()=>{if(parentDirectory)loadFolder(parentDirectory).catch(e=>status(e.message))});$('folder-enter').addEventListener('click',()=>{if($('folder-select').value)loadFolder(currentDirectory+'/'+$('folder-select').value).catch(e=>status(e.message))});$('folder-home').addEventListener('click',()=>loadFolder(__HOME__).catch(e=>status(e.message)));
+
 function status(t){$('status').textContent=t}async function list(){const j=await api('list');$('files').replaceChildren();for(const n of j.files){const o=document.createElement('option');o.value=o.textContent=n;$('files').append(o)}}
 // Coloreado local de Python: conserva el texto original.
 const pyKeywords=new Set('and as assert async await break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield match case'.split(' '));
@@ -140,8 +144,8 @@ $('code').addEventListener('scroll',syncEditorScroll);$('code').addEventListener
 function confirmDiscard(){return !dirty||confirm('Hay cambios sin guardar. ¿Quieres descartarlos?')}
 async function save(){await api('save',{name:$('name').value,code:$('code').value});dirty=false;await list();$('files').value=$('name').value;status('Archivo guardado.');}
 async function poll(){if(polling)return;polling=true;try{const j=await api('status');$('output').textContent=j.output||'Sin salida todavía.';for(const id of ['run','install','packages','update'])$(id).disabled=j.running;$('stop').disabled=!j.running||j.kind==='update';$('install-progress').hidden=j.kind!=='install';$('progress').value=j.percent||0;$('progress-label').textContent='Librerías completadas: '+(j.percent||0)+'%';if(j.running)status(j.kind==='install'?'Instalando librerías…':j.kind==='update'?'Descargando actualización…':'Ejecutando…');else if(j.started){status(j.reason||(j.kind==='install'?(j.returncode===0?'Librerías instaladas. Ya puedes importarlas.':'Falló la instalación. Revisa la consola.'):j.kind==='update'?(j.returncode===0?'Actualización aplicada. Reiniciando; la página se recargará.':'Falló la actualización. Revisa la consola.'):'Ejecución terminada. Código de salida: '+j.returncode));if(j.kind==='update'&&j.returncode===0&&!reloading){reloading=true;for(const id of ['run','install','packages','update'])$(id).disabled=true;setTimeout(()=>location.reload(),9000)}}}catch(e){status(reloading?'Reiniciando el explorador…':e.message)}finally{polling=false}}
-for(const [id,fn] of Object.entries({new:async()=>{if(!confirmDiscard())return;$('name').value='nuevo.py';$('code').value='print("Hola desde mi Raspberry Pi")\n';dirty=true;renderCode();status('Nuevo script: recuerda guardarlo.');},open:async()=>{if(!confirmDiscard())return;if(!$('files').value)return;const j=await api('read?name='+encodeURIComponent($('files').value));$('name').value=j.name;$('code').value=j.code;dirty=false;renderCode();status('Archivo abierto.');},update:async()=>{if(dirty){status("Guarda el código antes de actualizar.");return}if(!confirm("¿Actualizar desde tu repositorio y reiniciar el explorador?"))return;await api("update",{repository:$("repository").value.trim()});status("Actualizando…");await poll()},install:async()=>{await api('install',{packages:$('package').value});status('Instalando librerías…');await poll()},packages:async()=>{const j=await api('packages');$('package-list').hidden=false;$('package-list').textContent=j.packages.map(p=>p.name+'  '+p.version).join('\n');status('Lista de librerías actualizada.');},save,run:async()=>{await save();await api('run',{name:$('name').value});status('Ejecutando…');await poll()},stop:async()=>{await api('stop',{});await poll()}}))$(id).addEventListener('click',async()=>{try{await fn()}catch(e){status(e.message)}});
-$('code').addEventListener('input',()=>dirty=true);$('name').addEventListener('input',()=>dirty=true);$('code').addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();const t=e.target,a=t.selectionStart,b=t.selectionEnd;t.setRangeText('    ',a,b,'end');dirty=true;renderCode()}});window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});api('repository').then(j=>$('repository').value=j.repository||'').catch(e=>status(e.message));renderCode();list().catch(e=>status(e.message));poll();setInterval(poll,1000);
+for(const [id,fn] of Object.entries({new:async()=>{if(!confirmDiscard())return;$('name').value='nuevo.py';$('code').value='print("Hola desde mi Raspberry Pi")\n';dirty=true;renderCode();showFilePath();status('Nuevo script: recuerda guardarlo.');},open:async()=>{if(!confirmDiscard())return;if(!$('files').value)return;const j=await api('read?name='+encodeURIComponent($('files').value));$('name').value=j.name;$('code').value=j.code;dirty=false;renderCode();showFilePath();status('Archivo abierto.');},update:async()=>{if(dirty){status("Guarda el código antes de actualizar.");return}if(!confirm("¿Actualizar desde tu repositorio y reiniciar el explorador?"))return;await api("update",{repository:$("repository").value.trim()});status("Actualizando…");await poll()},install:async()=>{await api('install',{packages:$('package').value});status('Instalando librerías…');await poll()},packages:async()=>{const j=await api('packages');$('package-list').hidden=false;$('package-list').textContent=j.packages.map(p=>p.name+'  '+p.version).join('\n');status('Lista de librerías actualizada.');},save,run:async()=>{await save();await api('run',{name:$('name').value});status('Ejecutando…');await poll()},stop:async()=>{await api('stop',{});await poll()}}))$(id).addEventListener('click',async()=>{try{await fn()}catch(e){status(e.message)}});
+$('code').addEventListener('input',()=>dirty=true);$('name').addEventListener('input',()=>{dirty=true;showFilePath()});$('code').addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();const t=e.target,a=t.selectionStart,b=t.selectionEnd;t.setRangeText('    ',a,b,'end');dirty=true;renderCode()}});window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});api('repository').then(j=>$('repository').value=j.repository||'').catch(e=>status(e.message));renderCode();loadFolder().catch(e=>status(e.message));poll();setInterval(poll,1000);
 </script></html>'''
 
 def configure():
@@ -184,12 +188,24 @@ def authorize(handler):
     handler.end_headers()
     return False
 
-def script_path(name):
+def resolve_directory(value=None):
+    directory=Path(value) if value else SCRIPTS
+    home=Path.home().resolve()
+    if not directory.is_absolute():
+        raise ValueError('Selecciona una ruta absoluta dentro de tu carpeta personal.')
+    resolved=directory.resolve()
+    if not resolved.is_relative_to(home) or directory.absolute()!=resolved:
+        raise ValueError('Selecciona una carpeta dentro de home, sin enlaces simbólicos.')
+    if any(part.startswith('.') for part in resolved.relative_to(home).parts):
+        raise ValueError('Las carpetas ocultas están protegidas.')
+    if not resolved.is_dir():
+        raise ValueError('La carpeta seleccionada ya no existe.')
+    return resolved
+
+def script_path(name, directory=None):
     if not isinstance(name, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,79}\.py', name):
         raise ValueError('Nombre válido: letras sin acentos, números, guion o guion bajo, terminado en .py.')
-    if SCRIPTS.is_symlink() or SCRIPTS.resolve() != SCRIPTS.absolute():
-        raise ValueError('La carpeta de scripts no puede ser un enlace simbólico.')
-    path = SCRIPTS / name
+    path = resolve_directory(directory) / name
     if path.is_symlink():
         raise ValueError('No se permiten enlaces simbólicos.')
     return path
@@ -234,7 +250,7 @@ def package_names(text):
         raise ValueError('Escribe hasta 6 nombres separados por espacios, por ejemplo: requests pyserial. También se acepta requests==2.32.3.')
     return packages
 
-def start_job(command, kind='script', timeout=60):
+def start_job(command, kind='script', timeout=60, cwd=None):
     global JOB
     with LOCK:
         if RESTART_PENDING:
@@ -246,7 +262,7 @@ def start_job(command, kind='script', timeout=60):
             os.unlink(JOB['file'].name)
         output = tempfile.NamedTemporaryFile(delete=False)
         try:
-            process = subprocess.Popen(command,cwd=str(SCRIPTS),stdin=subprocess.DEVNULL,stdout=output,stderr=subprocess.STDOUT,start_new_session=True)
+            process = subprocess.Popen(command,cwd=str(cwd or SCRIPTS),stdin=subprocess.DEVNULL,stdout=output,stderr=subprocess.STDOUT,start_new_session=True)
         except Exception:
             output.close()
             os.unlink(output.name)
@@ -276,7 +292,7 @@ def handle(handler):
         if handler.command not in ('GET','HEAD'):
             json_response(handler, {'error':'Método no permitido'}, 405)
             return True
-        body = PAGE.replace('__TOKEN__', json.dumps(TOKEN)).encode()
+        body = PAGE.replace('__TOKEN__', json.dumps(TOKEN)).replace('__HOME__',json.dumps(str(Path.home()))).encode()
         handler.send_response(200)
         handler.send_header('Content-Type','text/html; charset=utf-8')
         handler.send_header('Content-Length',str(len(body)))
@@ -303,21 +319,25 @@ def handle(handler):
         if action in ('save','run','stop','install','update') and handler.command != 'POST':
             json_response(handler, {'error':'Se requiere POST'},405)
             return True
-        if action in ('list','read','status','packages','repository') and handler.command != 'GET':
+        if action in ('list','read','status','packages','repository','folders') and handler.command != 'GET':
             json_response(handler, {'error':'Se requiere GET'},405)
             return True
         SCRIPTS.mkdir(parents=True, exist_ok=True)
+        query=parse_qs(route.query)
+        directory=resolve_directory(data.get('directory') if handler.command=='POST' else query.get('directory',[None])[0]) if action in ('folders','list','read','save','run') else SCRIPTS
         result = {'ok':True}
-        if action == 'list':
-            result = {'files':sorted(p.name for p in SCRIPTS.glob('*.py') if p.is_file() and not p.is_symlink() and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,79}\.py',p.name))}
+        if action == 'folders':
+            result={'directory':str(directory),'parent':str(directory.parent) if directory!=Path.home().resolve() else None,'folders':sorted(p.name for p in directory.iterdir() if not p.name.startswith('.') and not p.is_symlink() and p.is_dir())}
+        elif action == 'list':
+            result = {'directory':str(directory),'files':sorted(p.name for p in directory.glob('*.py') if p.is_file() and not p.is_symlink() and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9_-]{0,79}\.py',p.name))}
         elif action == 'read':
             name = parse_qs(route.query).get('name',[''])[0]
-            path = script_path(name)
+            path = script_path(name,directory)
             if path.stat().st_size > 262144:
                 raise ValueError('Archivo demasiado grande para el editor.')
-            result = {'name':name, 'code':path.read_text(encoding='utf-8')}
+            result = {'name':name,'path':str(path), 'code':path.read_text(encoding='utf-8')}
         elif action == 'save':
-            path = script_path(data.get('name'))
+            path = script_path(data.get('name'),directory)
             code = data.get('code')
             if not isinstance(code,str):
                 raise ValueError('Código no válido.')
@@ -326,10 +346,10 @@ def handle(handler):
                     raise ValueError('Detén la ejecución antes de guardar.')
                 path.write_text(code, encoding='utf-8')
         elif action == 'run':
-            path = script_path(data.get('name'))
+            path = script_path(data.get('name'),directory)
             if not path.is_file():
                 raise ValueError('Guarda el archivo antes de ejecutarlo.')
-            start_job([environment_python(),'-u',str(path)])
+            start_job([environment_python(),'-u',str(path)],cwd=directory)
         elif action == 'install':
             packages = package_names(data.get('packages'))
             environment_python()
